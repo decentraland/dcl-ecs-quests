@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "outFile": "./dist/dcl-ecs-quests.js",
+    "allowJs": true,
+    "strict": true
+  },
+  "include": ["src/**/*.ts"],
+  "extends": "./node_modules/decentraland-ecs/types/tsconfig.json"
+}
