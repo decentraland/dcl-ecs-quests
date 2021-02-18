@@ -41,3 +41,8 @@ declare module "mappings" {
     import { QuestForRenderer } from "types";
     export function toRendererQuest(serverDetails: any): QuestForRenderer;
 }
+declare module "dcl-ecs-quests" {
+    export * from "component";
+    export * from "mappings";
+    export * from "types";
+}
