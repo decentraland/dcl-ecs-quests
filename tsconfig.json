@@ -2,8 +2,16 @@
   "compilerOptions": {
     "outFile": "./dist/dcl-ecs-quests.js",
     "allowJs": true,
-    "strict": true
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "dcl-quests-client/quests-client-amd": [
+        "./node_modules/dcl-quests-client/quests-client-amd.d.ts"
+      ]
+    }
   },
-  "include": ["src/**/*.ts"],
-  "extends": "./node_modules/decentraland-ecs/types/tsconfig.json"
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "dist"],
+  "extends": "./node_modules/decentraland-ecs/types/tsconfig.json",
+  "files": ["./node_modules/dcl-quests-client/quests-client-amd.js"]
 }
