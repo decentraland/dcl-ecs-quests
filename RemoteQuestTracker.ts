@@ -28,6 +28,9 @@ export class RemoteQuestTracker {
   private options: QuestTrackerOptions;
   private client: QuestsClient;
 
+  private currentState: PlayerQuestDetails | undefined;
+  private currentStatePromise?: Promise<PlayerQuestDetails>;
+
   public entity: Entity;
 
   constructor(private questId: string, options?: Partial<QuestTrackerOptions>) {
@@ -44,22 +47,32 @@ export class RemoteQuestTracker {
 
   async refresh() {
     return this.updateQuest(
-      await this.makeRequest(() => this.client.getQuestDetails(this.questId))
+      this.makeRequest(() => this.client.getQuestDetails(this.questId))
     );
   }
 
   async startQuest() {
     return this.updateQuest(
-      await this.makeRequest(() => this.client.startQuest(this.questId))
+      this.makeRequest(() => this.client.startQuest(this.questId))
     );
   }
 
   async makeProgress(taskId: string, progressData: ProgressData) {
     return this.updateQuest(
-      await this.makeRequest(() =>
+      this.makeRequest(() =>
         this.client.makeProgress(this.questId, taskId, progressData)
       )
     );
+  }
+
+  async getCurrentStatePromise() {
+    if (this.currentStatePromise) {
+      return this.currentStatePromise;
+    }
+  }
+
+  getCurrentState() {
+    return this.currentState;
   }
 
   private async makeRequest<T>(request: () => Promise<ClientResponse<T>>) {
@@ -75,10 +88,23 @@ export class RemoteQuestTracker {
     return response;
   }
 
-  private updateQuest(response: ClientResponse<PlayerQuestDetails>) {
+  private async updateQuest(
+    responsePromise: Promise<ClientResponse<PlayerQuestDetails>>
+  ) {
+    this.currentStatePromise = responsePromise.then((it) => {
+      if (it.ok) {
+        return it.body;
+      } else
+        throw new Error(
+          `Could not get quest state. Status: ${it.status}. Body: ${it.body}`
+        );
+    });
+
+    const response = await responsePromise;
     if (response.ok) {
+      this.currentState = response.body;
       this.entity.addComponentOrReplace(
-        new QuestTrackingInfo(toRendererQuest(response.body))
+        new QuestTrackingInfo(toRendererQuest(this.currentState))
       );
     }
 

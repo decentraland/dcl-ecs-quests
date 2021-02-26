@@ -54,11 +54,15 @@ declare module "RemoteQuestTracker" {
         private questId;
         private options;
         private client;
+        private currentState;
+        private currentStatePromise?;
         entity: Entity;
         constructor(questId: string, options?: Partial<QuestTrackerOptions>);
         refresh(): Promise<ClientResponse<PlayerQuestDetails>>;
         startQuest(): Promise<ClientResponse<PlayerQuestDetails>>;
         makeProgress(taskId: string, progressData: ProgressData): Promise<ClientResponse<PlayerQuestDetails>>;
+        getCurrentStatePromise(): Promise<PlayerQuestDetails | undefined>;
+        getCurrentState(): PlayerQuestDetails | undefined;
         private makeRequest;
         private updateQuest;
     }
