@@ -1,12 +1,13 @@
 import {
   ClientResponse,
-  PlayerQuestDetails,
+  QuestState,
   ProgressData,
   QuestsClient,
 } from "dcl-quests-client/quests-client-amd";
 import { signedFetch } from "@decentraland/SignedFetch";
 import { QuestTrackingInfo } from "./component";
 import { toRendererQuest } from "./mappings";
+import { ArbitraryStateChange } from "node_modules/dcl-quests-client/index";
 
 type QuestTrackerOptions = {
   clientFactory: () => QuestsClient;
@@ -28,8 +29,8 @@ export class RemoteQuestTracker {
   private options: QuestTrackerOptions;
   private client: QuestsClient;
 
-  private currentState: PlayerQuestDetails | undefined;
-  private currentStatePromise?: Promise<PlayerQuestDetails>;
+  private currentState: QuestState | undefined;
+  private currentStatePromise?: Promise<QuestState>;
 
   public entity: Entity;
 
@@ -65,6 +66,14 @@ export class RemoteQuestTracker {
     );
   }
 
+  async updateArbitraryState(changes: ArbitraryStateChange[]) {
+    return this.updateQuest(
+      this.makeRequest(() =>
+        this.client.updateArbitraryState(this.questId, changes)
+      )
+    );
+  }
+
   async getCurrentStatePromise() {
     if (this.currentStatePromise) {
       return this.currentStatePromise;
@@ -89,7 +98,7 @@ export class RemoteQuestTracker {
   }
 
   private async updateQuest(
-    responsePromise: Promise<ClientResponse<PlayerQuestDetails>>
+    responsePromise: Promise<ClientResponse<QuestState>>
   ) {
     this.currentStatePromise = responsePromise.then((it) => {
       if (it.ok) {

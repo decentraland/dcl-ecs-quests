@@ -44,7 +44,8 @@ declare module "mappings" {
     export function toRendererQuest(serverDetails: any): QuestForRenderer;
 }
 declare module "RemoteQuestTracker" {
-    import { ClientResponse, PlayerQuestDetails, ProgressData, QuestsClient } from "dcl-quests-client/quests-client-amd";
+    import { ClientResponse, QuestState, ProgressData, QuestsClient } from "dcl-quests-client/quests-client-amd";
+    import { ArbitraryStateChange } from "node_modules/dcl-quests-client/index";
     type QuestTrackerOptions = {
         clientFactory: () => QuestsClient;
         logErrors: boolean;
@@ -58,11 +59,12 @@ declare module "RemoteQuestTracker" {
         private currentStatePromise?;
         entity: Entity;
         constructor(questId: string, options?: Partial<QuestTrackerOptions>);
-        refresh(): Promise<ClientResponse<PlayerQuestDetails>>;
-        startQuest(): Promise<ClientResponse<PlayerQuestDetails>>;
-        makeProgress(taskId: string, progressData: ProgressData): Promise<ClientResponse<PlayerQuestDetails>>;
-        getCurrentStatePromise(): Promise<PlayerQuestDetails | undefined>;
-        getCurrentState(): PlayerQuestDetails | undefined;
+        refresh(): Promise<ClientResponse<QuestState>>;
+        startQuest(): Promise<ClientResponse<QuestState>>;
+        makeProgress(taskId: string, progressData: ProgressData): Promise<ClientResponse<QuestState>>;
+        updateArbitraryState(changes: ArbitraryStateChange[]): Promise<ClientResponse<QuestState>>;
+        getCurrentStatePromise(): Promise<QuestState | undefined>;
+        getCurrentState(): QuestState | undefined;
         private makeRequest;
         private updateQuest;
     }
