@@ -112,9 +112,14 @@ export class RemoteQuestTracker {
     const response = await responsePromise;
     if (response.ok) {
       this.currentState = response.body;
-      this.entity.addComponentOrReplace(
-        new QuestTrackingInfo(toRendererQuest(this.currentState))
-      );
+      const component = this.entity.getComponentOrNull(QuestTrackingInfo);
+      if (component) {
+        component.questData = toRendererQuest(this.currentState);
+      } else {
+        this.entity.addComponent(
+          new QuestTrackingInfo(toRendererQuest(this.currentState))
+        );
+      }
     }
 
     return response;
