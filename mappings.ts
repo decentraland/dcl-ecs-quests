@@ -1,3 +1,4 @@
+import { TaskState } from "dcl-quests-client/quests-client-amd";
 import { QuestForRenderer, SectionForRenderer, TaskForRenderer } from "./types";
 
 export function toRendererQuest(serverDetails: any): QuestForRenderer {
@@ -61,20 +62,18 @@ function toRendererTask(task: any): TaskForRenderer {
   };
 }
 
-function getProgressPayload(task: any) {
+function getProgressPayload(task: TaskState) {
   const progressMode = task.progressMode;
   switch (progressMode.type) {
     case "single":
       return { isDone: task.progressStatus === "completed" };
-    case "numeric":
+    default:
+      // We "disguise" step-based as numeric too. We have the information in progress summary
       return {
         type: "numeric",
-        start: progressMode.start,
-        end: progressMode.end,
-        current: task.progressSummary?.current ?? progressMode.start,
+        start: task.progressSummary.start,
+        end: task.progressSummary.end,
+        current: task.progressSummary.current,
       };
-    case "step-based":
-      // TODO
-      return {};
   }
 }
