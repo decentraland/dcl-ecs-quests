@@ -37,6 +37,6 @@ jobs:
           # always-auth: true
 
           ### --public flag to publish scoped packages
-          public: true
+          access: public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
