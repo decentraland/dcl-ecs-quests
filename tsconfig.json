@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "outFile": "./dist/dcl-ecs-quests.js",
+    "outFile": "./dist/@dcl/dcl-ecs-quests.js",
     "allowJs": true,
     "strict": true,
     "baseUrl": ".",
