@@ -1,0 +1,42 @@
+name: Publish NPM Package
+
+on:
+  push:
+    branches:
+      - master
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Install node dependencies
+        run: npm install
+        
+      - name: Build library
+        run: npm run build
+
+      - name: Publish
+        uses: menduz/oddish-action@master
+        with:
+          ### Working directory to publish
+          # cwd: "./packages/package-a"
+
+          ### Optional registry to set up for auth. Will set the registry in a
+          ### project level .npmrc and .yarnrc file, and set up auth to read in
+          ### from env.NODE_AUTH_TOKEN
+          # registry-url: "https://registry.npmjs.org"
+
+          ### Optional scope for authenticating against scoped registries
+          scope: dcl
+
+          ### Set always-auth in npmrc
+          # always-auth: true
+
+          ### --public flag to publish scoped packages
+          public: true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
