@@ -24,4 +24,13 @@ export type QuestForRenderer = {
   status: string;
   icon?: string;
   sections: SectionForRenderer[];
+  rewards: RewardForRenderer[];
+};
+
+export type RewardForRenderer = {
+  id: string;
+  name: string;
+  type: string;
+  imageUrl: string;
+  status: string;
 };

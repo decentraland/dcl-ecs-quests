@@ -1,5 +1,5 @@
 import { TaskState } from "dcl-quests-client/quests-client-amd";
-import { QuestForRenderer, SectionForRenderer, TaskForRenderer } from "./types";
+import { QuestForRenderer, RewardForRenderer, SectionForRenderer, TaskForRenderer } from "./types";
 
 export function toRendererQuest(serverDetails: any): QuestForRenderer {
   return {
@@ -11,6 +11,7 @@ export function toRendererQuest(serverDetails: any): QuestForRenderer {
     thumbnail_entry: serverDetails.thumbnailEntry,
     status: serverDetails.progressStatus,
     sections: toRendererSections(serverDetails.tasks),
+    rewards: gatherRewards(serverDetails.tasks)
   };
 }
 
@@ -76,4 +77,22 @@ function getProgressPayload(task: TaskState) {
         current: task.progressSummary.current,
       };
   }
+}
+
+function gatherRewards(tasks: any[]): RewardForRenderer[] {
+  const rewards: RewardForRenderer[] = [];
+
+  for (const task of tasks) {
+    for (const reward of task?.rewards) {
+      rewards.push({
+        id: reward.id ?? "",
+        name: reward.name ?? "",
+        type: reward.type ?? "",
+        imageUrl: "",
+        status: task?.givenRewards.find((x: any) => x.reward == reward)?.status ?? "not_given",
+      })
+    }
+  }
+
+  return rewards;
 }
