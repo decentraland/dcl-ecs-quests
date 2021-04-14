@@ -89,7 +89,7 @@ function gatherRewards(tasks: any[]): RewardForRenderer[] {
         name: reward.name ?? "",
         type: reward.type ?? "",
         imageUrl: "",
-        status: task?.givenRewards.find((x: any) => x.reward == reward).status ?? "ok",
+        status: task?.givenRewards.find((x: any) => x.reward == reward)?.status ?? "not_given",
       })
     }
   }
