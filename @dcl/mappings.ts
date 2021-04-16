@@ -1,5 +1,14 @@
-import { TaskState } from "dcl-quests-client/quests-client-amd";
-import { QuestForRenderer, RewardForRenderer, SectionForRenderer, TaskForRenderer } from "./types";
+import {
+  PlayerGivenReward,
+  QuestState,
+  TaskState,
+} from "dcl-quests-client/quests-client-amd";
+import {
+  QuestForRenderer,
+  RewardForRenderer,
+  SectionForRenderer,
+  TaskForRenderer,
+} from "./types";
 
 export function toRendererQuest(serverDetails: any): QuestForRenderer {
   return {
@@ -11,7 +20,7 @@ export function toRendererQuest(serverDetails: any): QuestForRenderer {
     thumbnail_entry: serverDetails.thumbnailEntry,
     status: serverDetails.progressStatus,
     sections: toRendererSections(serverDetails.tasks),
-    rewards: gatherRewards(serverDetails)
+    rewards: gatherRewards(serverDetails),
   };
 }
 
@@ -79,7 +88,7 @@ function getProgressPayload(task: TaskState) {
   }
 }
 
-function gatherRewards(quest: any): RewardForRenderer[] {
+function gatherRewards(quest: QuestState): RewardForRenderer[] {
   const rewards: RewardForRenderer[] = [];
 
   for (const reward of quest.rewards) {
@@ -87,20 +96,26 @@ function gatherRewards(quest: any): RewardForRenderer[] {
       id: reward.id ?? "",
       name: reward.name ?? "",
       type: reward.type ?? "",
-      imageUrl: "",
-      status: quest.givenRewards.find((x: any) => x.reward == reward)?.status ?? "not_given",
-    })
+      imageUrl: reward.imageUrl ?? "",
+      status:
+        quest.givenRewards.filter(
+          (x: PlayerGivenReward) => x.reward.id === reward.id
+        )[0]?.status ?? "not_given",
+    });
   }
 
   for (const task of quest.tasks) {
-    for (const reward of task?.rewards) {
+    for (const reward of task.rewards) {
       rewards.push({
         id: reward.id ?? "",
         name: reward.name ?? "",
         type: reward.type ?? "",
-        imageUrl: "",
-        status: task?.givenRewards.find((x: any) => x.reward == reward)?.status ?? "not_given",
-      })
+        imageUrl: reward.imageUrl ?? "",
+        status:
+          task.givenRewards.filter(
+            (x: PlayerGivenReward) => x.reward.id === reward.id
+          )[0]?.status ?? "not_given",
+      });
     }
   }
 
