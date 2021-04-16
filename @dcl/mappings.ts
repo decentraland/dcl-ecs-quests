@@ -11,7 +11,7 @@ export function toRendererQuest(serverDetails: any): QuestForRenderer {
     thumbnail_entry: serverDetails.thumbnailEntry,
     status: serverDetails.progressStatus,
     sections: toRendererSections(serverDetails.tasks),
-    rewards: gatherRewards(serverDetails.tasks)
+    rewards: gatherRewards(serverDetails)
   };
 }
 
@@ -79,10 +79,20 @@ function getProgressPayload(task: TaskState) {
   }
 }
 
-function gatherRewards(tasks: any[]): RewardForRenderer[] {
+function gatherRewards(quest: any): RewardForRenderer[] {
   const rewards: RewardForRenderer[] = [];
 
-  for (const task of tasks) {
+  for (const reward of quest.rewards) {
+    rewards.push({
+      id: reward.id ?? "",
+      name: reward.name ?? "",
+      type: reward.type ?? "",
+      imageUrl: "",
+      status: quest.givenRewards.find((x: any) => x.reward == reward)?.status ?? "not_given",
+    })
+  }
+
+  for (const task of quest.tasks) {
     for (const reward of task?.rewards) {
       rewards.push({
         id: reward.id ?? "",
