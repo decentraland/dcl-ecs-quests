@@ -1,3 +1,5 @@
+import {Visibility} from "dcl-quests-client/quests-client-amd";
+
 export type SectionForRenderer = {
   id: string;
   name: string;
@@ -25,6 +27,7 @@ export type QuestForRenderer = {
   icon?: string;
   sections: SectionForRenderer[];
   rewards: RewardForRenderer[];
+  visibility: Visibility; 
 };
 
 export type RewardForRenderer = {

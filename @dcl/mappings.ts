@@ -21,6 +21,7 @@ export function toRendererQuest(serverDetails: any): QuestForRenderer {
     status: serverDetails.progressStatus,
     sections: toRendererSections(serverDetails.tasks),
     rewards: gatherRewards(serverDetails),
+    visibility: serverDetails.visibility
   };
 }
 
