@@ -1,6 +1,6 @@
 {
   "name": "@dcl/ecs-quests",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "Decentraland Library for creating quests ECS components to show in UI",
   "scripts": {
     "start": "dcl start",
@@ -14,7 +14,7 @@
   "main": "./dist/@dcl/dcl-ecs-quests.js",
   "typings": "./dist/@dcl/dcl-ecs-quests.d.ts",
   "devDependencies": {
-    "decentraland-ecs": "^6.6.5-20210412172204.commit-4dc3092"
+    "decentraland-ecs": "^6.6.5-20210521143342.commit-cba52f8"
   },
   "dependencies": {
     "dcl-quests-client": "^2.8.0"

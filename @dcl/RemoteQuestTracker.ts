@@ -8,17 +8,20 @@ import { signedFetch } from "@decentraland/SignedFetch";
 import { QuestTrackingInfo } from "./component";
 import { toRendererQuest } from "./mappings";
 import { ArbitraryStateChange } from "node_modules/dcl-quests-client/index";
+import { getExplorerConfiguration } from "@decentraland/EnvironmentAPI";
 
 type QuestTrackerOptions = {
-  clientFactory: () => QuestsClient;
+  baseUrl: string;
+  clientFactory: (baseUrl: string) => QuestsClient;
   logErrors: boolean;
   addToEngine: boolean;
 };
 
 const defaultOptions = {
-  clientFactory: () =>
+  baseUrl: "https://quests-api.decentraland.io",
+  clientFactory: (baseUrl: string) =>
     new QuestsClient({
-      baseUrl: "https://quests-api.decentraland.io",
+      baseUrl,
       fetchFn: signedFetch,
     }),
   logErrors: true,
@@ -35,8 +38,22 @@ export class RemoteQuestTracker {
   public entity: Entity;
 
   constructor(private questId: string, options?: Partial<QuestTrackerOptions>) {
-    this.options = { ...defaultOptions, ...(options ?? {}) };
-    this.client = this.options.clientFactory();
+    this.options = {
+      ...defaultOptions,
+      ...(options ?? {}),
+    };
+
+    this.client = this.options.clientFactory(this.options.baseUrl);
+
+    if (getExplorerConfiguration) {
+      getExplorerConfiguration().then((config) => {
+        if (typeof config.configurations.questsServerUrl === "string") {
+          this.options.baseUrl = config.configurations.questsServerUrl;
+          this.client = this.options.clientFactory(this.options.baseUrl);
+        }
+      });
+    }
+
     this.entity = new Entity();
 
     if (this.options.addToEngine) {
