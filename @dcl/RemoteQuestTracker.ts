@@ -11,14 +11,13 @@ import { ArbitraryStateChange } from "node_modules/dcl-quests-client/index";
 import { getExplorerConfiguration } from "@decentraland/EnvironmentAPI";
 
 type QuestTrackerOptions = {
-  baseUrl: string;
+  baseUrl?: string;
   clientFactory: (baseUrl: string) => QuestsClient;
   logErrors: boolean;
   addToEngine: boolean;
 };
 
 const defaultOptions = {
-  baseUrl: "https://quests-api.decentraland.io",
   clientFactory: (baseUrl: string) =>
     new QuestsClient({
       baseUrl,
@@ -30,12 +29,15 @@ const defaultOptions = {
 
 export class RemoteQuestTracker {
   private options: QuestTrackerOptions;
-  private client: QuestsClient;
+  private client?: QuestsClient;
 
   private currentState: QuestState | undefined;
   private currentStatePromise?: Promise<QuestState>;
 
   public entity: Entity;
+
+  private readyListeners: ({ resolve: (client: QuestsClient) => any, reject: (reason: string) => any })[] = []
+  private _ready: boolean = false
 
   constructor(private questId: string, options?: Partial<QuestTrackerOptions>) {
     this.options = {
@@ -43,50 +45,73 @@ export class RemoteQuestTracker {
       ...(options ?? {}),
     };
 
-    this.client = this.options.clientFactory(this.options.baseUrl);
-
-    if (getExplorerConfiguration) {
+    if (this.options.baseUrl) {
+      this.setReady(this.options.clientFactory(this.options.baseUrl))
+    } else if (getExplorerConfiguration) {
       getExplorerConfiguration().then((config) => {
         if (typeof config.configurations.questsServerUrl === "string") {
-          this.options.baseUrl = config.configurations.questsServerUrl;
-          this.client = this.options.clientFactory(this.options.baseUrl);
+          this.options.baseUrl = config.configurations.questsServerUrl
+          this.setReady(this.options.clientFactory(this.options.baseUrl))
         }
+      }).catch(e => {
+        this.readyListeners.forEach(it => it.reject(`Couldn't get configuration from explorer: ${e}`))
       });
+    } else {
+      throw new Error("Unsupported configuration for this explorer version! You need to provide baseUrl")
     }
 
-    this.entity = new Entity();
+    this.entity = new Entity()
 
     if (this.options.addToEngine) {
-      engine.addEntity(this.entity);
+      engine.addEntity(this.entity)
     }
 
-    this.refresh();
+    this.refresh()
+  }
+
+  private setReady(client: QuestsClient) {
+    this.client = client
+    this._ready = true
+    this.readyListeners.forEach(it => it.resolve(client))
+    this.readyListeners = []
+  }
+
+  private async ready() {
+    if (this._ready) return this.client!
+
+    return new Promise<QuestsClient>((resolve, reject) => this.readyListeners.push({ resolve, reject }))
+  }
+
+  private async getClient() {
+    if (this.client) return this.client
+
+    return await this.ready()
   }
 
   async refresh() {
     return this.updateQuest(
-      this.makeRequest(() => this.client.getQuestDetails(this.questId))
+      this.makeRequest(async () => (await this.getClient()).getQuestDetails(this.questId))
     );
   }
 
   async startQuest() {
     return this.updateQuest(
-      this.makeRequest(() => this.client.startQuest(this.questId))
+      this.makeRequest(async () => (await this.getClient()).startQuest(this.questId))
     );
   }
 
   async makeProgress(taskId: string, progressData: ProgressData) {
     return this.updateQuest(
-      this.makeRequest(() =>
-        this.client.makeProgress(this.questId, taskId, progressData)
+      this.makeRequest(async () =>
+        (await this.getClient()).makeProgress(this.questId, taskId, progressData)
       )
     );
   }
 
   async updateArbitraryState(changes: ArbitraryStateChange[]) {
     return this.updateQuest(
-      this.makeRequest(() =>
-        this.client.updateArbitraryState(this.questId, changes)
+      this.makeRequest(async () =>
+        (await this.getClient()).updateArbitraryState(this.questId, changes)
       )
     );
   }
